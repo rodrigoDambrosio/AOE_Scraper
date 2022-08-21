@@ -1,15 +1,29 @@
-﻿using HtmlAgilityPack;
-using ScrapySharp.Extensions;
+﻿using AOE_Scraper;
+using System.Configuration;
 
-List<string> titulos = new();
-HtmlWeb web = new HtmlWeb();
-HtmlDocument doc = web.Load("https://www.ageofempires.com/news/category/releases?game=aoeii");
+string? path = ConfigurationManager.AppSettings.Get("Path");
+string? urlAoE3 = ConfigurationManager.AppSettings.Get("AOE3");
+string ? urlAoE2 = ConfigurationManager.AppSettings.Get("AOE2");
 
-foreach (var titulo in doc.DocumentNode.CssSelect(".post__title"))
+List<string> titulosAoE3 = NewsMethods.GetLast3News(urlAoE3);
+if (path is not null)
 {
-    if (titulo.InnerHtml.Contains("Update") || titulo.InnerHtml.Contains("Event"))
-        titulos.Add(titulo.InnerHtml);
+    bool newUpdateAoE3 = NewsMethods.CheckUpdatesWithFile(titulosAoE3, path);
+    NewsMethods.SaveNewTitles(titulosAoE3, path);
+    if (newUpdateAoE3)
+        await TelegramMessage.SendTelegramMessageAsync();
 }
-// Add aoe3 web
-// Make config file and telegram bot
-// Send telegram msg
+
+
+List<string> titulosAoE2 = NewsMethods.GetLast3News(urlAoE2);
+if (path is not null)
+{
+    bool newUpdateAoE2 = NewsMethods.CheckUpdatesWithFile(titulosAoE2, path);
+    NewsMethods.SaveNewTitles(titulosAoE2, path);
+    if (newUpdateAoE2)
+        await TelegramMessage.SendTelegramMessageAsync();
+}
+
+
+
+
